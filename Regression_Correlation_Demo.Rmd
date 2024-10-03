@@ -1,0 +1,156 @@
+---
+title: "Correlation and Simple Linear Regression Demo"
+author: "Professor Christopher J. Schmank"
+date: "2024-10-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(pacman)
+p_load(dplyr,tidyr,psych,skimr,ggplot2,gridExtra,jmv,mvtnorm,gapminder,moderndive,forcats,broom,janitor)
+p_loaded()
+```
+
+## Lets load in the data for this demo
+
+```{r}
+load(url("http://www.openintro.org/stat/data/evals.RData"))
+evals <- evals %>%
+  select(score, bty_avg, age)
+```
+
+## Exploratory Data Analysis
+
+1. Observe raw data
+1. Compute descriptive statistics
+1. Visualize data
+
+## Observe raw data
+
+```{r}
+head(evals)
+glimpse(evals)
+#View(evals)
+```
+
+## Compute descriptive statistics
+
+```{r}
+# Can use any of these but my preference is the `describe()` function
+describe(evals)
+
+# These alternatives give you many descriptive stats but nothing about normality
+skim(evals)
+summary(evals)
+skim_without_charts(evals)
+
+# Don't forget correlations!
+cor(evals$bty_avg,evals$score)
+corrMatrix(evals)
+```
+
+## Visualize the data
+
+```{r}
+ggplot(data = evals, 
+       mapping = aes(x = score)) +
+  geom_histogram(bins = 10, 
+                 color = "seagreen", 
+                 fill="black")
+
+ggplot(data = evals, 
+       mapping = aes(x = bty_avg)) +
+  geom_histogram(bins = 10, 
+                 color = "seagreen", 
+                 fill="black")
+
+ggplot(data = evals, 
+       mapping = aes(x = age)) +
+  geom_histogram(bins = 10, 
+                 color = "seagreen", 
+                 fill="black")
+```
+
+```{r}
+ggplot(data = evals, 
+       mapping = aes(y = score)) +
+  geom_boxplot()
+
+ggplot(data = evals, 
+       mapping = aes(y = bty_avg)) +
+  geom_boxplot()
+
+ggplot(data = evals, 
+       mapping = aes(y = age)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(evals, 
+       aes(x = bty_avg, 
+           y = score)) +
+  geom_point() +
+  labs(x = "Beauty Score", 
+       y = "Teaching Score",
+       title = "Relationship of Teaching and Beauty Score") +
+  geom_smooth(method = "lm")
+
+ggplot(evals, 
+       aes(x = age, 
+           y = score)) +
+  geom_point() +
+  labs(x = "Age", 
+       y = "Teaching Score",
+       title = "Relationship of Teaching and Age") +
+  geom_smooth(method = "lm")
+```
+
+
+## Now lets run our simple linear regression (`lm()` workflow + `broom` package)
+```{r}
+score_model <- lm(score ~ bty_avg, data = evals)
+
+# Get regression table using `tidy()`:
+tidy(score_model, conf.int=TRUE)
+
+# Get model fit table using `glance()`:
+glance(score_model)
+```
+
+## Alternatively we can use `linReg()` from the `jmv` package
+```{r}
+jmv::linReg(evals,
+            dep=score,
+            covs=bty_avg,
+            blocks=list(list('bty_avg')),
+            anova=TRUE,
+            stdEst=TRUE,
+            ci=TRUE,
+            ciStdEst=TRUE)
+```
+
+## Lastly we should conduct a residual analysis
+
+```{r}
+
+regression_points <- get_regression_points(score_model)
+
+# Scatterplot of Explanatory Variable along x-axis and Residuals along y-axis
+ggplot(regression_points, 
+       aes(x = bty_avg, y = residual)) +
+  geom_point() +
+  labs(x = "Beauty Score", y = "Residual") +
+  geom_hline(yintercept = 0, col = "blue", size = 1)
+
+# Additionally we want to look at the distribution of residuals
+ggplot(regression_points, 
+       aes(x = residual)) +
+  geom_histogram(bins = 10, color = "forestgreen") +
+  labs(x = "Residual")
+
+```
+
