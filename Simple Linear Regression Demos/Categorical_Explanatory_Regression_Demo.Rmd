@@ -1,0 +1,126 @@
+---
+title: "Simple Linear Regression (Categorical Explanatory Variable)"
+author: "Professor Christopher J. Schmank"
+date: "2024-10-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(pacman)
+p_load(dplyr,tidyr,psych,skimr,ggplot2,gridExtra,jmv,mvtnorm,gapminder,moderndive,forcats,broom,janitor)
+p_loaded()
+```
+
+## Lets load in the data for this demo
+
+```{r}
+gapminder2007 <- gapminder %>%
+  filter(year == 2007) %>% 
+  select(country, continent, lifeExp, gdpPercap)
+```
+
+## Exploratory Data Analysis
+
+1. Observe raw data
+1. Compute descriptive statistics
+1. Visualize data
+
+## Observe raw data
+
+```{r}
+head(gapminder2007)
+glimpse(gapminder2007)
+#View(gapminder2007)
+```
+
+## Compute descriptive statistics
+
+```{r}
+# Can use any of these but my preference is the `describe()` function
+describe(gapminder2007)
+
+# These alternatives give you many descriptive stats but nothing about normality
+skim(gapminder2007)
+summary(gapminder2007)
+skim_without_charts(gapminder2007)
+
+# Don't forget correlations --- These will not work for character variables!!
+corrMatrix(gapminder2007)
+```
+
+## Visualize the data
+
+```{r}
+ggplot(data = gapminder2007, 
+       mapping = aes(x = lifeExp)) +
+  geom_histogram(bins = 10, 
+                 color = "seagreen", 
+                 fill="black")
+
+ggplot(data = gapminder2007, 
+       mapping = aes(x = gdpPercap)) +
+  geom_histogram(bins = 10, 
+                 color = "seagreen", 
+                 fill="black")
+```
+
+```{r}
+ggplot(data = gapminder2007, 
+       mapping = aes(y = lifeExp)) +
+  geom_boxplot() +
+  facet_wrap("continent")
+
+```
+
+```{r}
+
+# Visualization will not generate linear regression line so this has been removed from this visualization
+ggplot(gapminder2007, 
+       aes(x = continent, 
+           y = lifeExp)) +
+  geom_point() +
+  labs(x = "Continent", 
+       y = "Life Expectancy",
+       title = "Relationship of Life Expectancy and Continent")
+
+```
+
+
+## Now lets run our simple linear regression (`lm()` workflow + `broom` package)
+```{r}
+lifeExp_model <- lm(lifeExp ~ continent, data = gapminder2007)
+
+# Get regression table using `tidy()`:
+tidy(lifeExp_model, conf.int=TRUE)
+
+# Get model fit table using `glance()`:
+glance(lifeExp_model)
+```
+
+
+## Lastly we should conduct a residual analysis
+
+```{r}
+
+regression_points <- get_regression_points(lifeExp_model)
+
+# Scatterplot of Explanatory Variable along x-axis and Residuals along y-axis
+ggplot(regression_points, 
+       aes(x = continent, y = residual)) +
+  geom_point() +
+  labs(x = "Continent", y = "Residual") +
+  geom_hline(yintercept = 0, col = "blue", size = 1)
+
+# Additionally we want to look at the distribution of residuals
+ggplot(regression_points, 
+       aes(x = residual)) +
+  geom_histogram(bins = 10, color = "forestgreen") +
+  labs(x = "Residual")
+
+describe(regression_points$residual)
+
+```
