@@ -152,5 +152,6 @@ ggplot(regression_points,
   geom_histogram(bins = 10, color = "forestgreen") +
   labs(x = "Residual")
 
+describe(regression_points$residual)
 ```
 
