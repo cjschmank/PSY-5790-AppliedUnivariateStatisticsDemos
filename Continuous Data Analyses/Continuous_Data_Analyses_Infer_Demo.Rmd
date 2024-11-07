@@ -1,0 +1,311 @@
+---
+title: "Infer Pipeline --- Continuous Data Analysis Tutorials"
+author: "Professor Christopher J. Schmank"
+date: "2024-11-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r, messages=FALSE,warning=FALSE}
+library(tidyverse)
+library(infer)
+```
+
+## `infer` One-Sample `t`-test
+
+One numerical variable (standardized mean `t`)
+
+```{r}
+# Generate `observed` t-statistic
+t_bar <- gss %>%
+  specify(response = hours) %>%
+  hypothesize(null = "point", mu = 40) %>%
+  calculate(stat = "t")
+```
+
+```{r}
+# Generate distribution assuming null (H_0)
+null_dist <- gss %>%
+  specify(response = hours) %>%
+  hypothesize(null = "point", mu = 40) %>%
+  generate(reps = 1000) %>%
+  calculate(stat = "t")
+
+# Generate theoretical t-distribution
+null_dist_theory <- gss %>%
+  specify(response = hours)  %>%
+  assume("t")
+```
+
+```{r}
+# Visualizing the inferential test (2-tailed)
+visualize(null_dist, method = "both") +
+  shade_p_value(obs_stat = t_bar, direction = "two-sided")
+
+# Visualizing the inferential test (1-tailed)
+visualize(null_dist, method = "both") +
+  shade_p_value(obs_stat = t_bar, direction = "greater")
+
+# Extract p-value of t-test (2-tailed)
+null_dist %>%
+  get_p_value(obs_stat = t_bar, direction = "two-sided")
+
+# Extract p-value of t-test (1-tailed)
+null_dist %>%
+  get_p_value(obs_stat = t_bar, direction = "greater")
+
+# Options for direction =  c("two-sided", "greater", or "less")
+```
+
+```{r}
+set.seed(13)
+
+# Confidence Interval around `t`-statistic
+
+# Generate bootstrapped Null Distribution
+boot_dist <- gss %>%
+   specify(response = hours) %>%
+   hypothesize(null = "point", mu = 40) %>%
+   generate(reps = 1000, type = "bootstrap") %>%
+   calculate(stat = "t")
+
+standard_error_ci <- boot_dist %>%
+  get_ci(type = "se", point_estimate = t_bar)
+
+visualize(boot_dist) +
+  shade_confidence_interval(endpoints = standard_error_ci)
+```
+
+
+
+## `infer` Paired Sample `t`-test
+
+One numerical variable (Paired/Repeated Measure) --- Mean of Differences
+
+```{r}
+set.seed(13)
+
+gss_paired <- gss %>%
+   mutate(
+      hours_previous = hours + 5 - rpois(nrow(.), 4.8),
+      diff = hours - hours_previous
+   )
+
+gss_paired %>%
+   select(hours, hours_previous, diff)
+```
+
+
+```{r}
+# Generate `observed` statistic(s)
+x_tilde <- gss_paired %>%
+  specify(response = diff) %>%
+  calculate(stat = "mean")
+
+t_diff <- gss_paired %>% 
+  specify(response = diff) %>% 
+  hypothesize(null = "point", mu = 0) %>%
+  calculate(stat = "t")
+```
+
+```{r}
+# Generate distribution assuming null (H_0)
+null_dist <- gss_paired %>%
+  specify(response = diff) %>%
+  hypothesize(null = "paired independence") %>% 
+  generate(reps = 1000, type = "permute") %>% 
+  calculate(stat = "mean")
+```
+
+```{r}
+# Visualizing the inferential test (2-tailed)
+visualize(null_dist) +
+  shade_p_value(obs_stat = x_tilde, direction = "two-sided")
+
+# Visualizing the inferential test (1-tailed)
+visualize(null_dist) +
+  shade_p_value(obs_stat = x_tilde, direction = "less")
+
+# Extract p-value of t-test (2-tailed)
+null_dist %>%
+  get_p_value(obs_stat = x_tilde, direction = "two-sided")
+
+# Extract p-value of t-test (1-tailed)
+null_dist %>%
+  get_p_value(obs_stat = x_tilde, direction = "less")
+
+```
+
+```{r}
+set.seed(13)
+
+# Confidence Interval around mean of differences
+
+# Generate bootstrapped Null Distribution
+boot_dist <- gss_paired %>%
+   specify(response = diff) %>%
+   hypothesize(null = "point", mu = 0) %>%
+   generate(reps = 1000, type = "bootstrap") %>%
+   calculate(stat = "mean")
+
+standard_error_ci <- boot_dist %>%
+  get_ci(type = "se", point_estimate = x_tilde)
+
+visualize(boot_dist) +
+  shade_confidence_interval(endpoints = standard_error_ci)
+```
+
+```{r}
+# Generate distribution assuming null (H_0)
+null_dist <- gss_paired %>%
+  specify(response = diff)  %>%
+  hypothesize(null = "point", mu = 0) %>% 
+  generate(reps = 1000) %>% 
+  calculate(stat = "t")
+```
+
+```{r}
+# Visualizing the inferential test (2-tailed)
+visualize(null_dist) +
+  shade_p_value(obs_stat = t_diff, direction = "two-sided")
+
+# Visualizing the inferential test (1-tailed)
+visualize(null_dist) +
+  shade_p_value(obs_stat = t_diff, direction = "less")
+
+# Extract p-value of t-test (2-tailed)
+null_dist %>%
+  get_p_value(obs_stat = t_diff, direction = "two-sided")
+
+# Extract p-value of t-test (1-tailed)
+null_dist %>%
+  get_p_value(obs_stat = t_diff, direction = "less")
+
+```
+
+
+```{r}
+set.seed(13)
+
+# Confidence Interval around mean of differences
+
+# Generate bootstrapped Null Distribution
+boot_dist <- gss_paired %>%
+   specify(response = diff) %>%
+   hypothesize(null = "point", mu = 0) %>%
+   generate(reps = 1000, type = "bootstrap") %>%
+   calculate(stat = "t")
+
+standard_error_ci <- boot_dist %>%
+  get_ci(type = "se", point_estimate = t_diff)
+
+visualize(boot_dist) +
+  shade_confidence_interval(endpoints = standard_error_ci)
+```
+
+
+## `infer` Independent Samples `t`-test
+
+One numerical, one categorical (2 levels ONLY) variables --- Standardized difference in means
+
+
+```{r}
+# Generate `observed` statistic
+t_hat <- gss %>% 
+  specify(age ~ college) %>% 
+  hypothesize(null = "independence") %>%
+  calculate(stat = "t", order = c("degree", "no degree"))
+```
+
+```{r}
+# Generate distribution assuming null (H_0)
+null_dist <- gss %>%
+  specify(age ~ college) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "t", order = c("degree", "no degree"))
+
+# Generate theoretical t-distribution
+null_dist_theory <- gss %>%
+  specify(age ~ college) %>%
+  assume("t")
+```
+
+```{r}
+# Visualizing the inferential test (2-tailed)
+visualize(null_dist, method = "both") +
+  shade_p_value(obs_stat = t_hat, direction = "two-sided")
+
+# Visualizing the inferential test (1-tailed)
+visualize(null_dist, method = "both") +
+  shade_p_value(obs_stat = t_hat, direction = "greater")
+
+# Extract p-value of t-test (2-tailed)
+null_dist %>%
+  get_p_value(obs_stat = t_hat, direction = "two-sided")
+
+# Extract p-value of t-test (1-tailed)
+null_dist %>%
+  get_p_value(obs_stat = t_hat, direction = "greater")
+
+```
+
+```{r}
+set.seed(13)
+
+# Confidence Interval around mean of differences
+
+# Generate bootstrapped Null Distribution
+boot_dist <- gss %>%
+   specify(hours ~ college) %>%
+   hypothesize(null = "independence") %>% 
+   generate(reps = 1000, type = "bootstrap") %>%
+   calculate(stat = "t", order = c("degree", "no degree"))
+
+standard_error_ci <- boot_dist %>%
+  get_ci(type = "se", point_estimate = t_hat)
+
+visualize(boot_dist) +
+  shade_confidence_interval(endpoints = standard_error_ci)
+```
+
+
+## `infer` One-way ANOVA `F`-test
+
+One numerical, one categorical (>2 levels) variables
+
+
+```{r, message=FALSE}
+# Generate `observed` statistic
+F_hat <- gss %>% 
+  specify(age ~ partyid) %>%
+  calculate(stat = "F")
+```
+
+```{r message=FALSE}
+# Generate distribution assuming null (H_0)
+null_dist <- gss %>%
+   specify(age ~ partyid) %>%
+   hypothesize(null = "independence") %>%
+   generate(reps = 1000, type = "permute") %>%
+   calculate(stat = "F")
+
+# Generate theoretical t-distribution
+null_dist_theory <- gss %>%
+   specify(age ~ partyid) %>%
+   hypothesize(null = "independence") %>%
+   assume(distribution = "F")
+```
+
+```{r}
+# Visualizing the inferential test (1-tailed)
+visualize(null_dist, method = "both") +
+  shade_p_value(obs_stat = F_hat, direction = "greater")
+
+# Extract p-value of t-test (1-tailed)
+null_dist %>%
+  get_p_value(obs_stat = F_hat, direction = "greater")
+
+```
