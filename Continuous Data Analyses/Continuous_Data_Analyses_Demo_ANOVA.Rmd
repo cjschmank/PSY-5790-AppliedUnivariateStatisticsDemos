@@ -1,0 +1,251 @@
+---
+title: "Continuous Data Analysis Demo 2 --- ANOVA"
+author: "Professor Christopher J. Schmank"
+date: "2024-11-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r, message=FALSE,warning=FALSE}
+# install.packages("datarium")
+# install.packages("rstatix")
+# install.packages("ggpubr")
+
+library(jmv)
+library(psych)
+library(tidyverse)
+library(infer)
+library(datarium)
+library(rstatix)
+library(ggpubr)
+```
+
+## Repeated-Measures (Within-Subject) ANOVA
+
+Single DV collected multiple times from Ss
+
+**Research Question 1**: Are the self-esteem means different across the three time points for our participants?
+
+```{r}
+# Load and inspect demo data set(s)
+
+# Load `mice` data from `datarium` package
+data(selfesteem, package="datarium")
+head(selfesteem)
+```
+
+**Hypothesis Statement**: 2-tailed (Non-directional)
+
+$H_0$: Null Hypothesis --- Self-esteem means are not different across time, $\mu_{Time1} = \mu_{Time2} = \mu_{Time3}$
+
+$H_a$: Alternate Hypothesis --- At least one mean ($\mu$) differs from another
+
+## Descriptive Statistics (Do not forget to visualize!!)
+
+First, we will change the format from wide to long!
+
+```{r}
+selfesteemB <- selfesteem %>%
+  gather(key = "time", value = "selfest", t1, t2, t3) %>%
+  convert_as_factor(id, time)
+head(selfesteemB, 3)
+
+#Descriptive statistics for `self-esteem` variable across `time`
+describeBy(selfesteemB$selfest, group=selfesteemB$time, mat=TRUE)
+
+```
+
+## `jmv` Repeated Measures ANOVA
+
+```{r}
+selfesteem %>%
+  anovaRM(rm = list(list(
+    label = 'Timing',
+    levels = c('Time1','Time2','Time3'))),
+         rmCells = list(
+           list(
+             measure = 't1',
+             cell = 'Time1'),
+           list(
+             measure = 't2',
+             cell = 'Time2'),
+           list(
+             measure = 't3',
+             cell = 'Time3')),
+    rmTerms = list('Timing'),
+    effectSize = 'eta',
+    spherTests = TRUE,
+    postHoc = 'Timing',
+    postHocCorr = 'bonf')
+```
+
+
+## Assumption Checks
+
+```{r}
+selfesteemB %>%
+  group_by(time) %>%
+  shapiro_test(selfest)
+
+ggqqplot(selfesteemB, "selfest", facet.by = "time")
+```
+
+
+# Running the RM ANOVA
+
+```{r}
+rmanova <- anova_test(data = selfesteemB, 
+                      dv = selfest,
+                      wid = id,
+                      within = time)
+
+get_anova_table(rmanova)
+```
+
+# Pairwise Comparisons --- Post Hoc Analyses
+
+```{r}
+pwc <- selfesteemB %>%
+  pairwise_t_test(
+    selfest ~ time, paired = TRUE,
+    p.adjust.method = "bonferroni"
+    )
+pwc
+```
+
+
+## Publishable Plot | Using `rstatix` and `ggpubr` packages
+
+```{r}
+pwc <- pwc %>% add_xy_position(x = "time")
+
+bxp <- ggboxplot(selfesteemB, x = "time", y = "selfest") +
+  stat_pvalue_manual(pwc) +
+  labs(
+    subtitle = get_test_label(rmanova, detailed = TRUE),
+    caption = get_pwc_label(pwc)
+  )
+
+bxp
+```
+
+
+## APA Style Results Section
+
+**Statistical Interpretation**: 
+
+A within-subject one-way ANOVA was performed to determine the relationship between self-esteem scores and timing. The mean and standard deviations are presented in Table 1. The ANOVA was statistically significant at the .05 alpha level, *F*(2, 18) = 55.47, *p* \< .001, $\eta^2$ = .83. A post hoc test was conducted using the Bonferroni Correction that indicated that the mean self-esteem level at Baseline were statistically significantly lower than self-esteem levels at Time 1 (*p* = .002) and at Time 2 (*p* \< .001). Furthermore the mean self-esteem level at Time 1 was statistically significantly lower than self-esteem levels at Time 2 (*p* = .003).
+
+
+## One-Way (Between-Subjects) ANOVA
+
+Single DV collected across **mutually exclusive** groups (3+)
+
+**Research Question 1**: Do different nutrient treatments (e.g., `control`, `calcium`, `nitrogen`) lead to different levels of `plant growth` (i.e., `weight`)? 
+
+```{r}
+# Load and inspect demo data set(s)
+
+# Load `mice` data from `datarium` package
+data("PlantGrowth")
+head(PlantGrowth)
+```
+
+**Hypothesis Statement**: 2-tailed (Non-directional)
+
+$H_0$: Null Hypothesis --- Plant growth (i.e., `weight`) means are not different across nutrient treatments, $\mu_{Control} = \mu_{Calcium} = \mu_{Nitrogen}$
+
+$H_a$: Alternate Hypothesis --- At least one mean ($\mu$) differs from another
+
+## Descriptive Statistics (Do not forget to visualize!!)
+
+```{r}
+#Descriptive statistics for `weight` variable across `group`
+describeBy(PlantGrowth$weight, group=PlantGrowth$group, mat=TRUE)
+
+```
+
+
+## `jmv` Repeated Measures ANOVA
+
+```{r}
+PlantGrowth %>%
+  ANOVA(dep=weight,
+        factors = group,
+        effectSize = 'eta',
+        norm = TRUE,
+        homo = TRUE,
+        postHoc = weight~group,
+        postHocCorr = 'bonf',
+        postHocES = 'd',
+        postHocEsCi = TRUE)
+```
+
+
+## Assumption Checks
+
+```{r}
+PlantGrowth %>%
+  group_by(group) %>%
+  shapiro_test(weight)
+
+ggqqplot(PlantGrowth, "weight", facet.by = "group")
+
+PlantGrowth %>% 
+  levene_test(weight ~ group)
+```
+
+
+# Running the ANOVA
+
+```{r}
+anova <- PlantGrowth %>% 
+  anova_test(weight ~ group)
+
+get_anova_table(anova)
+```
+
+# Pairwise Comparisons --- Post Hoc Analyses
+
+```{r}
+pwcB <- PlantGrowth %>%
+  pairwise_t_test(weight ~ group,
+                  p.adjust.method = "bonferroni")
+pwcB
+
+pwcT <- PlantGrowth %>%
+  tukey_hsd(weight ~ group)
+pwcT
+```
+
+
+## Publishable Plot | Using `rstatix` and `ggpubr` packages
+
+```{r}
+pwcB <- pwcB %>% add_xy_position(x = "group")
+pwcT <- pwcT %>% add_xy_position(x = "group")
+
+ggboxplot(PlantGrowth, x = "group", y = "weight") +
+  stat_pvalue_manual(pwcT, hide.ns = TRUE) +
+  labs(
+    subtitle = get_test_label(anova, detailed = TRUE),
+    caption = get_pwc_label(pwcT)
+  )
+
+ggboxplot(PlantGrowth, x = "group", y = "weight") +
+  stat_pvalue_manual(pwcB, hide.ns = TRUE) +
+  labs(
+    subtitle = get_test_label(anova, detailed = TRUE),
+    caption = get_pwc_label(pwcB)
+  )
+
+```
+
+
+## APA Style Results Section
+
+**Statistical Interpretation**: 
+
+A between-subjects one-way ANOVA was performed to determine the relationship between plant growth (i.e., weight) and nutrient treatments (e.g., control, calcium, and nitrogen). The mean and standard deviations are presented in Table 1. The ANOVA was statistically significant at the .05 alpha level, *F*(2, 27) = 4.85, *p* = .016, $\eta^2$ = .264. A post hoc test was conducted using the Bonferroni Correction that indicated that the mean weight of plants treated with Nitrogen were statistically significantly higher than the mean weight of plants treated with Calcium (*p* = .01, Cohen's *d* = -1.388, 95% CI [-2.384, -0.392]). However, the mean weight of plants treated with the control was not statistically significantly different compared to the mean weight of plants treated with Nitrogen (*p* = .58, Cohen's *d* = 0.595, 95% CI [-0.337, 1.528]) or to the mean weight of plants treated with Calcium (*p* = .26, Cohen's *d* = -0.793, 95% CI [-1.736, 0.152]).
