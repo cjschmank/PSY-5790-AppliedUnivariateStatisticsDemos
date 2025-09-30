@@ -1,61 +1,80 @@
 ---
 title: "Correlation and Simple Linear Regression Demo"
-author: "Professor Christopher J. Schmank"
-date: "2024-10-03"
+subtitle: "Continuous Predictor"
+author: "Professor Christopher J. Schmank, PhD"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
 ```
+
+### Required Libraries
 
 ```{r}
-library(pacman)
-p_load(dplyr,tidyr,psych,skimr,ggplot2,gridExtra,jmv,mvtnorm,gapminder,moderndive,forcats,broom,janitor)
-p_loaded()
+library(tidyverse)
+library(dplyr)
+library(kableExtra)
+library(psych)
+library(jmv)
+library(lm.beta) 
+library(skimr)
+library(broom)
+library(moderndive)
+library(gapminder)
 ```
 
-## Lets load in the data for this demo
+### First load in the data
 
 ```{r}
 load(url("http://www.openintro.org/stat/data/evals.RData"))
 evals <- evals %>%
   select(score, bty_avg, age)
+
 ```
 
-## Exploratory Data Analysis
+### Exploratory Data Analysis
 
 1. Observe raw data
 1. Compute descriptive statistics
 1. Visualize data
 
-## Observe raw data
+### Observe raw data
+
+Remember, you should always technically do more than `head()` or `glimpse()` --- take the time to observe the raw data to see if anything jumps out at you!
 
 ```{r}
 head(evals)
-glimpse(evals)
+#glimpse(evals)
 #View(evals)
+
 ```
 
-## Compute descriptive statistics
+### Compute descriptive statistics
 
 ```{r}
-# Can use any of these but my preference is the `describe()` function
+## Can use any of the function calls below to conduct descriptives 
+## My personal preference is the `describe()` function
 describe(evals)
 
-# These alternatives give you many descriptive stats but nothing about normality
-skim(evals)
-summary(evals)
-skim_without_charts(evals)
+## These alternatives give you many descriptive stats but nothing about normality
+# skim(evals)
+# summary(evals)
+# skim_without_charts(evals)
 
-# Don't forget correlations!
-cor(evals$bty_avg,evals$score)
+## Don't forget correlations!
 corrMatrix(evals)
+
 ```
 
-## Visualize the data
+### Visualize the data
 
 ```{r}
+## Histograms
+
 ggplot(data = evals, 
        mapping = aes(x = score)) +
   geom_histogram(bins = 10, 
@@ -73,9 +92,11 @@ ggplot(data = evals,
   geom_histogram(bins = 10, 
                  color = "seagreen", 
                  fill="black")
+
 ```
 
 ```{r}
+## Boxplots
 ggplot(data = evals, 
        mapping = aes(y = score)) +
   geom_boxplot()
@@ -87,9 +108,11 @@ ggplot(data = evals,
 ggplot(data = evals, 
        mapping = aes(y = age)) +
   geom_boxplot()
+
 ```
 
 ```{r}
+## Scatterplots
 ggplot(evals, 
        aes(x = bty_avg, 
            y = score)) +
@@ -107,10 +130,11 @@ ggplot(evals,
        y = "Teaching Score",
        title = "Relationship of Teaching and Age") +
   geom_smooth(method = "lm")
+
 ```
 
 
-## Now lets run our simple linear regression (`lm()` workflow + `broom` package)
+### Now lets run our simple linear regression (`lm()` workflow + `broom` package)
 ```{r}
 score_model <- lm(score ~ bty_avg, data = evals)
 
@@ -119,24 +143,25 @@ tidy(score_model, conf.int=TRUE)
 
 # Get model fit table using `glance()`:
 glance(score_model)
+
 ```
 
-## Alternatively we can use `linReg()` from the `jmv` package
+### Alternatively we can use `linReg()` from the `jmv` package
 ```{r}
-jmv::linReg(evals,
-            dep=score,
-            covs=bty_avg,
-            blocks=list(list('bty_avg')),
-            anova=TRUE,
-            stdEst=TRUE,
-            ci=TRUE,
-            ciStdEst=TRUE)
+linReg(evals,
+       dep=score,
+       covs=bty_avg,
+       blocks=list(list('bty_avg')),
+       anova=TRUE,
+       stdEst=TRUE,
+       ci=TRUE,
+       ciStdEst=TRUE)
+
 ```
 
-## Lastly we should conduct a residual analysis
+### Lastly we should conduct a residual analysis
 
 ```{r}
-
 regression_points <- get_regression_points(score_model)
 
 # Scatterplot of Explanatory Variable along x-axis and Residuals along y-axis
@@ -153,5 +178,6 @@ ggplot(regression_points,
   labs(x = "Residual")
 
 describe(regression_points$residual)
+
 ```
 
