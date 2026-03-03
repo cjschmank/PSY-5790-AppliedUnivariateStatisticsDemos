@@ -1,0 +1,332 @@
+---
+title: "Psychological Measurement: Descriptive Statistics, Visualizations, and Reliability Tutorial"
+author: "Christopher J. Schmank, PhD"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Load Libraries for Tutorial
+
+```{r echo=TRUE,message=FALSE,warning=FALSE}
+library(tidyverse)
+library(psych)
+library(jmv)
+```
+
+#### Data Visualization Template `ggplot`
+
+```{r eval=FALSE,echo=TRUE}
+
+ggplot(data = <DATA>, 
+       mapping = aes(<MAPPINGS>)) + 
+  <GEOM_FUNCTION>()
+
+```
+
+- `data = ` name of data frame/object within R Environment
+- `mapping = aes()` argument requires variable name/label from within `data =`
+    + What variable(s) do you want to visualize?
+    + Different graphics/visualizations require specifying: 
+        - `x =` OR `y =` within `aes()` (**univariate**)
+        - `x = ` AND `y = ` within `aes()` (**bivariate**/**grouped**)
+       
+- `geom_function()` is then layered (`+`) into the code to achieve the appropriate visualization:
+    + Histograms --- `geom_histogram()`
+    + Boxplots --- `geom_boxplot()` 
+    + Scatterplots  --- `geom_point()`
+    + Linegraphs --- `geom_line()`
+    + Barplots --- `geom_bar()` OR `geom_col()`
+    
+#### Data Visualization | Histograms & Boxplots
+
+**Histogram Examples**:
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+
+# Univariate Histogram Code
+ggplot(data = bfi,
+       mapping = aes(x = age)) +
+  geom_histogram() 
+
+# Faceted, Bivariate Histogram Code
+ggplot(data = bfi,
+       mapping = aes(x = age)) +
+  geom_histogram() +
+  facet_wrap(~ gender, nrow = 2) # Can also use `ncol = 1` for same stacked visualization
+
+```
+
+**Histogram Examples Expanded**
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+
+# Adding Cutomization Layers to Histogram Visualization
+ggplot(data = bfi,
+       mapping = aes(x = age)) +
+  geom_histogram(bins = 12, color = "goldenrod2") +
+  labs(y = "Count", x = "Age of Participant")
+
+bfi$genderF<-factor(bfi$gender, labels = c("Male", "Female"))
+
+ggplot(data = bfi,
+       mapping = aes(x = age)) +
+  geom_histogram(bins = 12, color = "forestgreen") +
+  facet_wrap(~ genderF, nrow = 2) +
+  labs(y = "Count", x = "Age of Participant")
+
+```
+
+**Boxplot Examples**
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+
+# Univariate boxplot
+ggplot(data = bfi,
+       mapping = aes(y = age)) +
+  geom_boxplot() +
+  labs(y = "Age of Participant")
+
+#Grouped, Bivariate Boxplot
+ggplot(data = bfi,
+       mapping = aes(x = genderF, y = age)) +
+  geom_boxplot() +
+  labs(x = "Gender", y = "Age of Participant")
+
+```
+
+
+#### Data Visualization | Scatterplots & Linegraphs
+
+**Scatterplot Examples**
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+
+# Bivariate Scatterplot
+ggplot(data = attitude, 
+       mapping = aes(x = complaints, y = rating)) + 
+  geom_point() +
+  labs(x = "How Employee Deals With Complaints Rating", y = "Overall Employee Ratings")
+
+# Bivariate Scatterplot w/ Line of Best-Fit
+ggplot(data = attitude, 
+       mapping = aes(x = complaints, y = rating)) + 
+  geom_point() +
+  labs(x = "How Employee Deals With Complaints Rating", y = "Overall Employee Ratings") +
+  geom_smooth(method = "lm", se = FALSE)
+
+# Bivariate Scatterplot w/ Line of Best-Fit (+ Standard Error)
+ggplot(data = attitude, 
+       mapping = aes(x = complaints, y = rating)) + 
+  geom_point() +
+  labs(x = "How Employee Deals With Complaints Rating", y = "Overall Employee Ratings") +
+  geom_smooth(method = "lm", se = TRUE)
+
+```
+
+**Linegraph Example**
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+# Bivariate Linegraph (TIME ACROSS X-AXIS)
+ggplot(data = economics, 
+       aes(x = date, y = unemploy)) +
+  geom_line() + 
+  labs(x = "Data Collection Year", y = "Number of Unemployed Persons")
+
+```
+
+
+#### Describing Data | `psych` Package
+
+```{r eval=FALSE,echo=TRUE}
+# Describe entire dataset OR subset of data object
+describe(<DATA>)
+
+# Grouped descriptive statistics of entire dataset OR subset of data object
+describeBy(<DATA>, 
+           group = <GROUPING VARIABLE>,
+           mat = TRUE)
+```
+
+By default `describe()` and `describeBy()` functions use these arguments:
+
+1. Remove missing data listwise --- `na.rm = TRUE`
+1. Calculate skew and kurtosis --- `skew = TRUE`
+1. Calculate the range --- `ranges = TRUE`
+1. DOES NOT calculate the Interquartile Range --- `IQR = FALSE`
+
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+
+describe(bfi[,c(1:5,26,28)], 
+         IQR = TRUE)
+
+describeBy(bfi[,c(1:5,28:29)],
+           group = bfi$genderF,
+           IQR = TRUE,
+           mat = TRUE)
+```
+
+#### Calculating Correlation | `psych` and `jmv`
+
+```{r eval=FALSE,echo=TRUE}
+
+# `psych` package correlation matrix
+cor_data <- corr.test(<DATA>,
+                      use = "complete")
+print(cor_data, short = FALSE)
+
+# Can call for ONLY correlation matrix OR save as data object
+cor_data$r
+
+# `jmv` package correlation matrix and visualization
+corrMatrix(<DATA>, 
+           vars = vars(<VARIABLE1>, <VARIABLE2>, <VARIABLE3>, ... <VARIABLEk>,),
+           ci = TRUE,
+           plots = TRUE,
+           plotDens=TRUE,
+           plotStats=TRUE)
+```
+
+**`psych` Correlation Example**
+```{r eval=TRUE,echo=TRUE, warning=FALSE,message=FALSE}
+# Generate correlation data object 
+cor_bfi <- corr.test(bfi[,c(1:5,26,28)],
+                     use = "complete")
+
+# Prints all output related to `corr.test()`
+print(cor_bfi, short=FALSE)
+
+# Prints only correlation matrix
+cor_bfi$r
+
+# Saves correlation matrix as data object for later use
+cor_bfi_r <- cor_bfi$r
+
+```
+
+**`jmv` Correlation Example**
+
+```{r eval=TRUE,echo=TRUE, warning=FALSE,message=FALSE}
+
+# Can specify the variables individually
+corrMatrix(bfi,
+           vars = vars('A1','A2','A3','A4','A5','gender','age'),
+           ci=TRUE,
+           plots = TRUE,
+           plotDens=TRUE,
+           plotStats=TRUE)
+
+# Can specify the variables by subsetting data object
+corrMatrix(bfi[,c(1:5,26,28)],
+           ci=TRUE,
+           plots = TRUE,
+           plotDens=TRUE,
+           plotStats=TRUE)
+
+```
+
+#### Internal Consistency Reliability
+
+**Cronbach's Alpha ($\alpha$)**
+```{r eval=FALSE,echo=TRUE}
+
+# Set seed for replicability of bootstrapped CI generation
+set.seed(<NUMBER>)
+
+# Create alpha data object for later use
+alpha_dat<-alpha(<DATA>,
+                 check.keys = TRUE,
+                 n.iter = 100,
+                 use = "complete.obs")
+
+```
+
+**Alpha Example**
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+
+# For replication, value of `set.seed()` should remain consistent 
+set.seed(13)
+
+# Creates data object that can be printed fully or called specifically
+alpha_bfi <- alpha(bfi[1:25],
+                   check.keys = TRUE,
+                   n.iter = 100,
+                   use="complete.obs")
+
+# Call all output related to alpha function
+alpha_bfi
+
+# Specific calls available
+alpha_bfi$total
+alpha_bfi$boot.ci
+alpha_bfi$alpha.drop
+alpha_bfi$item.stats
+
+# Can use dplyr piping to retrieve Standardized Alpha value
+bfi %>%
+  dplyr::select(A1:O5) %>%
+  drop_na() %>%
+  alpha(check.keys = TRUE) %>% # check.keys = TRUE checks for negatively coded items and reverses them!!
+  .$total %>% 
+  dplyr::select("std.alpha")
+
+```
+
+**McDonald's Omega ($\omega$)**
+```{r eval=FALSE,echo=TRUE}
+
+# Create omega data object for later use
+omega_dat <- omega(<DATA>,
+                   check.keys=TRUE,
+                   nfactors = <NUMBER>,
+                   fm = "ml",
+                   n.iter = 1,
+                   use = "complete.obs")
+
+```
+
+**Omega Example**
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+
+# Creates data object that can be printed fully or called separately
+omega_bfi <- omega(bfi[1:25],
+                   check.keys=TRUE,
+                   nfactors=5,
+                   fm="ml",
+                   n.iter=1,
+                   use = "complete.obs")
+
+# Calls all output related to omega function
+omega_bfi
+
+# Specific calls available
+omega_bfi$omega.tot
+omega_bfi$alpha
+
+# Can use dplyr piping to retrieve Standardized Alpha value
+bfi %>%
+  dplyr::select(A1:O5) %>%
+  drop_na() %>%
+  omega(plot=FALSE) %>%
+  .$omega.tot
+```
+
+**Split-Half Reliability**
+```{r eval=FALSE,echo=TRUE}
+
+# Runs split-half reliability estimate on data
+splitHalf(<DATA>,
+          raw = TRUE,
+          check.keys=TRUE,
+          use = "complete")
+             
+```
+
+**Split-Half Example**
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE}
+
+# Generate split-half reliability output
+splitHalf(bfi[1:25],
+          raw=TRUE,
+          check.keys=TRUE,
+          use = "complete")
+
+```
