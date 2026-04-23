@@ -1,7 +1,8 @@
 ---
-title: "Week 11 Chi-Square Demo"
-author: "Professor Christopher J. Schmank"
-date: "2024-10-26"
+title: "PSY 5790: Applied Univariate and Bivariate/Bivariable Statistics"
+subtitle: "Week 11 - Chi-Square Demo"
+author: "Christopher J. Schmank, PhD"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
@@ -24,7 +25,7 @@ head(dat)
 set.seed(13)
 datA <- dat %>%
   rep_sample_n(size = 1000,
-               replace = FALSE,
+               replace = TRUE,
                reps = 1)
 ```
 
@@ -113,9 +114,9 @@ For these three variables **unless otherwise specified** the `expected frequenci
 
 **Research Question**: Were there the same proportion of `doctoral` and `masters program` professors?
 
-**Null hypothesis**: $H_0 = \text{Equal Proportions Between Doctoral and Master}$ --- Program level will be equally distributed across our sample of $n = 1000$ participants
+**Null hypothesis**: $H_0 = \text{Equal Proportions Between Doctoral and Master}$ --- Program level will be equally distributed across our sample of $n = 1000$ participants, $p_{doctoral} = p_{masters}$
 
-**Alternative hypothesis**: $H_A = \text{Unequal Proportions}$ --- Program level will be unequally distributed across our sample of $n = 1000$ participants
+**Alternative hypothesis**: $H_A = \text{Unequal Proportions}$ --- Program level will be unequally distributed across our sample of $n = 1000$ participants, $p_{doctoral} \neq p_{masters}$
 
 ```{r}
 propTestN(data = datA,
@@ -125,16 +126,16 @@ propTestN(data = datA,
 ```
 **Write Up/Interpretation**: 
 
-A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of [professors] was [equivalent across `doctoral` and `masters` programs]. The distribution of [professors] [was] different between [`doctoral` and `masters` programs],  $\chi^2(1, N = 1000) = 401.96, p < .001$. Observed and expected frequencies for each condition are presented in Table X.
+A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of professors was equivalent across `doctoral` and `masters` programs. The distribution of professors was different between `doctoral` and `masters` programs,  $\chi^2(1, N = 1000) = 396.90, p < .001$. Observed and expected frequencies for each condition are presented in Table X.
 
 
 **Specific Example 1B**
 
 **Research Question**: Was the proportion of `doctoral` to `masters program` professors .80/.20?
 
-**Null hypothesis**: $H_0 = \text{Proportion Between Doctoral and Master Equivalent to .80/.20}$ --- Program level will be distributed with 80% Doctoral and 20% Masters across our sample of $n = 1000$ participants
+**Null hypothesis**: $H_0 = \text{Proportion Between Doctoral and Master Equivalent to .80/.20}$ --- Program level will be distributed with 80% Doctoral and 20% Masters across our sample of $n = 1000$ participants, $p_{doctoral} = .80; p_{masters} = .20$
 
-**Alternative hypothesis**: $H_A = \text{Different Proportional Breakdown}$ --- Program level will not be distributed with 80% Doctoral and 20% Masters across our sample of $n = 1000$ participants
+**Alternative hypothesis**: $H_A = \text{Different Proportional Breakdown}$ --- Program level will not be distributed with 80% Doctoral and 20% Masters across our sample of $n = 1000$ participants, $p_{doctoral} \neq .80; p_{masters} \neq .20$
 
 ```{r}
 propTestN(data = datA,
@@ -144,7 +145,7 @@ propTestN(data = datA,
 ```
 **Write Up/Interpretation**: 
 
-A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of [professors across `doctoral` and `masters` programs] was [80%/20%], respectively. The distribution of [professors across `doctoral` and `masters` programs] [was not] different than expected,  $\chi^2(1, N = 1000) = 1.81, p =  .179$. Observed and expected frequencies for each condition are presented in Table X.
+A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of professors across `doctoral` and `masters` programs was 80% doctoral/20% masters, respectively. The distribution of professors across `doctoral` and `masters` programs was not different than expected (80%/20%),  $\chi^2(1, N = 1000) = 1.41, p =  .24$. Observed and expected frequencies for each condition are presented in Table X.
 
 ---
 
@@ -152,9 +153,9 @@ A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether t
 
 **Research Question**: Were there the same proportion of `male` and `female` professors?
 
-**Null hypothesis**: $H_0 = \text{Equal Proportions Between Female and Male Professors}$ --- Gender will be equally distributed across our $n = 1000$ sample
+**Null hypothesis**: $H_0 = \text{Equal Proportions Between Female and Male Professors}$ --- Gender will be equally distributed across our $n = 1000$ sample, $p_{male} = p_{female}$
 
-**Alternative hypothesis**: $H_A = \text{Unequal Proportions}$ --- Gender will be unequally distributed across our $n = 1000$ sample
+**Alternative hypothesis**: $H_A = \text{Unequal Proportions}$ --- Gender will be unequally distributed across our $n = 1000$ sample, $p_{male} \neq p_{female}$
 ```{r}
 propTestN(data = datA,
                var = 'sex',
@@ -164,7 +165,7 @@ propTestN(data = datA,
 
 **Write Up/Interpretation**: 
 
-A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of [`gender`] was [equivalent across `males` and `female` professors]. The distribution of [`gender`] [was] different between [`male` and `female` professors],  $\chi^2(1, N = 1000) = 37.636, p < .001$. Observed and expected frequencies for each condition are presented in Table X.
+A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of `gender` was equivalent across `males` and `female` professors. The distribution of `gender` was different between `male` and `female` professors,  $\chi^2(1, N = 1000) = 34.60, p < .001$. Observed and expected frequencies for each condition are presented in Table X.
 
 ---
 
@@ -172,9 +173,9 @@ A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether t
 
 **Research Question**: Were there the equal proportions of professor `rank`?
 
-**Null hypothesis**: $H_0 = \text{Equal Proportions Amongst Rank Levels}$ --- Professor rank will be equally distributed across our $n = 1000$ sample
+**Null hypothesis**: $H_0 = \text{Equal Proportions Amongst Rank Levels}$ --- Professor rank will be equally distributed across our $n = 1000$ sample, $p_{Full} = p_{Associate} = p_{Assistant} = p_{Instructor}$
 
-**Alternative hypothesis**: $H_A = \text{Unequal Proportions}$ --- Professor rank will not be equally distributed across our $n = 1000$ sample
+**Alternative hypothesis**: $H_A = \text{Unequal Proportions}$ --- Professor rank will not be equally distributed across our $n = 1000$ sample, $p_{Full} \neq p_{Associate} \neq p_{Assistant} \neq p_{Instructor}$
 ```{r}
 propTestN(data = datA,
                var = 'rank',
@@ -185,16 +186,16 @@ propTestN(data = datA,
 
 **Write Up/Interpretation**: 
 
-A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of [the `rank` of sampled professors] was [equivalent across `Full Professor`, `Associate Professor`, `Assistant Professor` and `Instructors`]. The distribution of [`rank`] [was] different amongst [the levels of professor `rank`],  $\chi^2(3, N = 1000) = 335.304, p < .001$. Observed and expected frequencies for each condition are presented in Table X.
+A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of the `rank` of sampled professors was equivalent across `Full Professor`, `Associate Professor`, `Assistant Professor` and `Instructors`. The distribution of `rank` was different among the levels of professor `rank`,  $\chi^2(3, N = 1000) = 341.88, p < .001$. Observed and expected frequencies for each condition are presented in Table X.
 
 
 **Specific Example 3B**
 
 **Research Question**: Do the `observed frequencies` of our sampled `rank` variable differ from the `expected frequencies` of 42% Full Professors, 28% Associate Professors, 28% Assistant Professors, and 2% Instructors?
 
-**Null hypothesis**: $H_0 = \text{Observed Proportions Amongst Rank Levels Approximate Expected}$ --- Professor rank will be distributed with 42% Full, 28% Associate, 28% Assistant, and 2% Instructors across our sample of $n = 1000$ participants
+**Null hypothesis**: $H_0 = \text{Observed Proportions Amongst Rank Levels Approximate Expected}$ --- Professor rank will be distributed with 42% Full, 28% Associate, 28% Assistant, and 2% Instructors across our sample of $n = 1000$ participants, $p_{Full} = .42; p_{Associate} = .28; p_{Assistant} = .28; p_{Instructor} = .02$
 
-**Alternative hypothesis**: $H_A = \text{Observed Proportions Different Than Expected}$ --- Professor rank will not be distributed with 42% Full, 28% Associate, 28% Assistant, and 2% Instructors across our sample of $n = 1000$ participants
+**Alternative hypothesis**: $H_A = \text{Observed Proportions Different Than Expected}$ --- Professor rank will not be distributed with 42% Full, 28% Associate, 28% Assistant, and 2% Instructors across our sample of $n = 1000$ participants, $p_{Full} \neq .42; p_{Associate} \neq .28; p_{Assistant} \neq .28; p_{Instructor} \neq .02$
 
 ```{r}
 propTestN(data = datA,
@@ -205,7 +206,7 @@ propTestN(data = datA,
 
 **Write Up/Interpretation**: 
 
-A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of [professors across `Full`, `Associate`, `Assistant`, and `Instructor` ranks] was [42%/28%/28/2%], respectively. The distribution of [`rank`] [was not] different than expected,  $\chi^2(3, N = 1000) = 0.268, p =  .966$. Observed and expected frequencies for each condition are presented in Table X.
+A chi-square ($\chi^2$) goodness of fit test was performed to evaluate whether the distribution of professors across `Full`, `Associate`, `Assistant`, and `Instructor` ranks was 42% `Full`, 28% `Associate`, 28% `Assistant` and 2% `Instructor`. The distribution of `rank` was not different than expected,  $\chi^2(3, N = 1000) = 0.52, p =  .91$. Observed and expected frequencies for each condition are presented in Table X.
 
 ---
 
@@ -237,7 +238,7 @@ contTables(dat = datA,
            phiCra = TRUE)
 ```
 
-**Write Up/Interpretation**: A chi-square ($\chi^2$) test of independence was performed to evaluate the relationship between [`gender`] and [`program level` of professor]. These variables were not associated, $\chi^2(1, N = 1000) = 0.767, p = .381, \phi = .028$. Neither `males` nor `females` were more likely to be employed in the `doctoral` or `masters` programs than expected.  
+**Write Up/Interpretation**: A chi-square ($\chi^2$) test of independence was performed to evaluate the relationship between `gender` and `program level` of professor. These variables were not associated, $\chi^2(1, N = 1000) = 0.08, p = .78, \phi = .01$. Neither `males` nor `females` were more likely to be employed in the `doctoral` or `masters` programs than expected.  
 
 ---
 
@@ -258,7 +259,7 @@ contTables(dat = datA,
 
 ```
 
-**Write Up/Interpretation**: A chi-square ($\chi^2$) test of independence was performed to evaluate the relationship between [`gender`] and [`professor rank`]. These variables were associated, $\chi^2(3, N = 1000) = 32.284, p <.001, \text{Cramer's V} = .180$. `Professors` were more frequently `male` in this sample. Furthermore, more `male` professors were employed as `full professor` and more `female` professors were employed as `assistant professor` than expected. `Cramer's V` values of this magnitude are considered small-to-moderate as an effect size measure of association between `gender` and `rank`. 
+**Write Up/Interpretation**: A chi-square ($\chi^2$) test of independence was performed to evaluate the relationship between `gender` and `professor rank`. These variables were associated, $\chi^2(3, N = 1000) = 41.89, p <.001, \text{Cramer's V} = .21$. `Professors` were more frequently `male` in this sample. Furthermore, more `male` professors were employed as `full professor` and more `female` professors were employed as `assistant` and `associate professor` than expected. `Cramer's V` values of this magnitude are considered weak (i.e., small) as an effect size measure of association between `gender` and `rank`. 
 
 *Note*: Can determine which shared levels of the categorical variables are "driving" the $\chi^2$ statistic --- look at difference of `observed` and `expected`, i.e., more extreme `differences` imply larger additions to the statistic!
 
@@ -280,7 +281,7 @@ contTables(dat = datA,
            phiCra = TRUE)
 ```
 
-**Write Up/Interpretation**: A chi-square ($\chi^2$) test of independence was performed to evaluate the relationship between [`program level`] and [`professor rank`]. These variables were associated, $\chi^2(3, N = 1000) = 9.996, p = .02, \text{Cramer's V} = .10$. `Professors` were more frequently employed by the `doctoral` program in this sample. Furthermore, more `assistant professors` were employed by the `masters program` and fewer `full professors` were employed by the `doctoral program` than expected. `Cramer's V` values of this magnitude are considered small as an effect size measure of association between `program level` and `rank`. 
+**Write Up/Interpretation**: A chi-square ($\chi^2$) test of independence was performed to evaluate the relationship between `program level` and `professor rank`. These variables were not associated, $\chi^2(3, N = 1000) = 4.91, p = .18, \text{Cramer's V} = .07$. `Cramer's V` values of this magnitude are considered weak as an effect size measure of association between `program level` and `rank`. There was no association among graduate program and professor rank in this sample of data.
 
 ---
 
@@ -289,6 +290,7 @@ contTables(dat = datA,
 **Standardized One Proportion Test** --- Similar to $\chi^2$ GoF for Single Categorical Variable (2 levels)
 
 ```{r warning=FALSE}
+set.seed(13)
 # Calculate Standardized Proportion Difference (p_hat) for Gender
 p_hat<- datA %>%
   specify(response = sex, success = "Male") %>%
@@ -300,8 +302,9 @@ p_hat
 null_dist_P <- datA %>%
   specify(response = sex, success = "Male") %>%
   hypothesize(null = "point", p = .5) %>% 
-  generate(reps = 1000, type ="draw") %>% 
+  generate(reps = 1000, type ="draw") %>%
   calculate(stat = "z")
+# `type = "draw"` is ONLY used for this chi-square GoF test
 
 # Create Visualization with Observed value and larger highlighted
 null_dist_P %>% 
@@ -314,6 +317,7 @@ null_dist_P %>%
 ```
 
 ```{r}
+set.seed(13)
 # Calculate Standardized Proportion Difference (p_hat2) for Level
 p_hat2<- datA %>%
   specify(response = level, success = "Doctorate") %>%
@@ -343,6 +347,7 @@ null_dist_P2 %>%
 **Standardized Difference in Proportion Test** --- Similar to $\chi^2$ test of independence for two categorical variables (2 levels)
 
 ```{r}
+set.seed(13)
 # Calculate Standardized Difference in Proportion Test (z_hat) in Level across Sex
 z_hat<- datA %>%
   specify(response = level, explanatory = sex, success = "Doctorate") %>% 
@@ -374,15 +379,15 @@ null_dist_Z %>%
 
 ```{r}
 #Chi-square GoF Test on Gender:
-chi_sq <- 37.636
+chi_sq <- 34.59600
 p_hat*p_hat
 
 #Chi-square GoF Test on Level(p = .80):
-chi_sq2 <- 1.80625  
+chi_sq2 <- 1.406250  
 p_hat2*p_hat2
 
 #Chi-square Test of Independence (Gender x Level):
-chi_sq3 <- 0.7665342
+chi_sq3 <- 0.07988594
 z_hat*z_hat
 ```
 
@@ -391,6 +396,7 @@ z_hat*z_hat
 **Can directly (re)conduct chi-square GoF test with categorical variables (>2 levels)**
 
 ```{r}
+set.seed(13)
 # Calculate Chi-square GoF test using infer
 chi_sq <- datA %>%
   specify(response = rank) %>% 
@@ -416,7 +422,12 @@ null_dist_datA <- datA %>%
 null_dist_datA %>% 
   visualize() +
   shade_p_value(chi_sq,
-                direction = "greater")
+                direction = "greater") 
+
+null_dist_datA %>%
+  get_p_value(obs_stat = chi_sq$stat, direction="greater")
+
+# OR
 
 pchisq(chi_sq$stat, 3, lower.tail = FALSE)
 ```
@@ -426,6 +437,7 @@ pchisq(chi_sq$stat, 3, lower.tail = FALSE)
 **Chi-square test of independence can be conducted with two categorical variables (>2 levels)**
 
 ```{r}
+set.seed(13)
 # Calculate Chi-square Independence test using infer
 chi_sq2 <- datA %>% 
   specify(response = sex, explanatory = rank, success = "Male") %>% 
@@ -436,7 +448,7 @@ chi_sq2 <- datA %>%
 null_dist_2 <- datA %>%
   specify(response = sex, explanatory = rank, success = "Male") %>%
   hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>% 
+  generate(reps = 10000, type = "permute") %>% 
   calculate(stat = "Chisq") 
 
 # Visualize where calculated chi-square falls on distribution
@@ -444,10 +456,16 @@ null_dist_2 %>%
   visualize() +
   shade_p_value(chi_sq2, direction = "greater")
 
+null_dist_2 %>%
+  get_p_value(obs_stat = chi_sq2$stat, direction="greater")
+
+# OR
+
 pchisq(chi_sq2$stat, 3, lower.tail = FALSE)
 ```
 
 ```{r}
+set.seed(13)
 # Calculate Chi-square independence test using infer
 chi_sq3 <- datA %>% 
   specify(response = level, explanatory = rank, success = "Doctorate") %>% 
@@ -458,7 +476,7 @@ chi_sq3 <- datA %>%
 null_dist_3 <- datA %>%
   specify(response = level, explanatory = rank, success = "Doctorate") %>%
   hypothesize(null = "independence") %>%
-  generate(reps = 1000, type = "permute") %>% 
+  generate(reps = 10000, type = "permute") %>% 
   calculate(stat = "Chisq") 
 
 # Visualize where calculated chi-square falls on distribution
@@ -467,6 +485,14 @@ null_dist_3 %>%
   shade_p_value(chi_sq3,
                 direction = "greater")
 
+null_dist_3 %>%
+  get_p_value(obs_stat = chi_sq3$stat, direction="greater")
+
+# OR 
+
 pchisq(chi_sq3$stat, 3, lower.tail = FALSE)
 ```
+**The main difference between the `bootstrap` and `permute` functions in the infer pipeline**: 
 
+- `bootstrapping` --- best for estimating confidence intervals
+- `permuting` --- best for testing hypotheses
